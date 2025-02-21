@@ -1,6 +1,6 @@
 {
     "question_model": {
-        "model": "llama3.2:1b",
+        "model": "deepseek-r1:14b",
         "base_url": "http://localhost:1234/v1",
         "openai_api_key": "lm-studio",
         "ollama": true,
