@@ -1,6 +1,7 @@
 # core/orchestrator.py
 import asyncio
 import csv
+import re
 import json
 import os
 import time
@@ -158,11 +159,20 @@ class Orchestrator:
             prompt_text = dp.get("prompt") if self.log_prompt else ""
             expected = self.get_expected(clean_filename, name) if self.log_expected else ""
             resp_content = resp[1] if isinstance(resp[1], str) else resp[1].content
-            try:
-                json_resp = json.loads(resp_content)
-                response_text = json_resp.get("extracted", json_resp.get(name, json_resp))
-            except json.decoder.JSONDecodeError:
-                response_text = resp_content
+            match = re.search(r'<think>(.*?)</think>', resp_content, re.DOTALL)
+            if match:
+                # Extract content inside <think> tag and strip tags
+                think_content = match.group(1).strip()
+                match = re.search(r'"extracted":\s*"(.*?)"', resp_content, re.DOTALL)
+                if match:
+                    # Extract content inside 
+                    response_text = match.group(1).strip()
+            else:
+                try:
+                    json_resp = json.loads(resp_content)
+                    response_text = json_resp.get("extracted", json_resp.get(name, json_resp))
+                except json.decoder.JSONDecodeError:
+                    response_text = resp_content
 
             unit = ""
             lower_question = dp["dp"].get("question", "").lower()
